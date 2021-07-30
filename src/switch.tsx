@@ -1,7 +1,8 @@
 import React from "react";
-import cn from "classnames";
 
 import { useRouteState } from "./route";
+
+const nonActiveStyles: React.CSSProperties = { pointerEvents: "none" };
 
 export const RouteSwitch: React.FC<{
   className?: string;
@@ -9,7 +10,7 @@ export const RouteSwitch: React.FC<{
   const { active, visible } = useRouteState();
 
   return (
-    <div className={cn(!active && "pointer-events-none", className)}>
+    <div className={className} style={!active ? nonActiveStyles : undefined}>
       {visible && children}
     </div>
   );
