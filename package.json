@@ -14,6 +14,9 @@
     "url": "https://github.com/paulkre/state-router"
   },
   "homepage": "https://github.com/paulkre/state-router#readme",
+  "scripts": {
+    "build": "tsc"
+  },
   "peerDependencies": {
     "react": "^17"
   },
