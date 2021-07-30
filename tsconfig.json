@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "module": "esnext",
+    "target": "esnext",
+    "strict": true,
+    "outDir": "lib",
+    "rootDir": "src",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "jsx": "react"
+  },
+  "include": ["src"]
+}

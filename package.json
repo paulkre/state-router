@@ -1,0 +1,26 @@
+{
+  "name": "@paulkre/state-router",
+  "description": "A stateful routing system for React",
+  "author": "Paul Kretschel <paul.kretschel@icloud.com>",
+  "keywords": [
+    "react",
+    "router",
+    "state",
+    "stateful",
+    "transitions"
+  ],
+  "version": "0.0.0",
+  "bugs": {
+    "url": "https://github.com/paulkre/state-router"
+  },
+  "homepage": "https://github.com/paulkre/state-router#readme",
+  "peerDependencies": {
+    "react": "^17"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@changesets/cli": "^2.16.0"
+  }
+}
