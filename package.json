@@ -9,7 +9,7 @@
     "stateful",
     "transitions"
   ],
-  "version": "2.0.0",
+  "version": "2.0.1",
   "bugs": {
     "url": "https://github.com/paulkre/state-router"
   },

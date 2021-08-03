@@ -1,5 +1,11 @@
 # @paulkre/state-router
 
+## 2.0.1
+
+### Patch Changes
+
+- 3c751e7: Prop names have changed.
+
 ## 2.0.0
 
 ### Major Changes
