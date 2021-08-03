@@ -12,7 +12,7 @@ export const TransitionManager: React.FC<{ duration: number }> = ({
   children,
   duration,
 }) => {
-  const { routeID } = useRouterState();
+  const { id: routeID } = useRouterState();
   const [handledRoute, setHandledRoute] = React.useState(routeID);
 
   React.useEffect(() => {
