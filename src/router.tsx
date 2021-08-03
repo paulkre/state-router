@@ -3,24 +3,19 @@ import React from "react";
 export type RouteData = Record<string, unknown>;
 
 type StateRouterState<T extends RouteData = RouteData> = {
-  route: string | null;
-  prevRoute: string | null;
+  routeID: string | null;
+  prevRouteID: string | null;
   routeData: Record<string, T>;
 };
 
 type Props = {
-  routePath: string;
+  routeID: string | null;
   routeData: RouteData;
-  routes: RouteCollection;
-};
-
-export type RouteCollection = {
-  [id in string]?: RegExp;
 };
 
 const initialState: StateRouterState = {
-  route: null,
-  prevRoute: null,
+  routeID: null,
+  prevRouteID: null,
   routeData: {},
 };
 
@@ -32,83 +27,58 @@ export function useRouterState(): StateRouterState {
   return React.useContext(Context);
 }
 
-export function useRouteData<T extends RouteData = Record<string, unknown>>(
+export function useRouteData<T extends RouteData = RouteData>(
   layout: string
 ): T | null {
   const { routeData: layoutData } = useRouterState();
-  return React.useMemo(
-    () => (layoutData[layout] as T) || null,
-    [layout, layoutData]
-  );
+  return React.useMemo(() => (layoutData[layout] as T) || null, [
+    layout,
+    layoutData,
+  ]);
 }
 
 export const StateRouter: React.FC<Props> = ({
   children,
-  routePath,
+  routeID,
   routeData,
-  routes,
 }) => {
-  const getRouteIDByPath = React.useCallback<(path: string) => string | null>(
-    (path) => Object.keys(routes).find((id) => routes[id]!.test(path)) || null,
-    [routes]
-  );
-
-  const [handledRouteData, setHandledRouteData] =
-    React.useState<RouteData | null>(null);
+  const [
+    handledRouteData,
+    setHandledRouteData,
+  ] = React.useState<RouteData | null>(null);
 
   const [state, setState] = React.useState<StateRouterState>(() => {
-    const id = getRouteIDByPath(routePath);
-
     const initState: StateRouterState = {
       ...initialState,
-      route: id,
+      routeID,
     };
-    if (id) initState.routeData = { [id]: routeData };
+    if (routeID) initState.routeData = { [routeID]: routeData };
 
     return initState;
   });
 
   React.useEffect(() => {
-    const id = getRouteIDByPath(routePath);
-
-    if (id === state.route && routeData === handledRouteData) return;
+    if (routeID === state.routeID && routeData === handledRouteData) return;
 
     const newState: StateRouterState = {
       ...state,
-      prevRoute: state.route,
-      route: id,
+      prevRouteID: state.routeID,
+      routeID: routeID,
     };
 
-    if (id)
+    if (routeID)
       newState.routeData = {
         ...state.routeData,
-        [id]: routeData,
+        [routeID]: routeData,
       };
 
     setState(newState);
     setHandledRouteData(routeData);
-  }, [handledRouteData, state, routePath, routeData, getRouteIDByPath]);
+  }, [handledRouteData, state, routeID, routeData]);
 
-  return state.route ? (
+  return state.routeID ? (
     <RouterContextProvider value={state}>{children}</RouterContextProvider>
   ) : (
     <>{children}</>
   );
 };
-
-export function withStateRouter(
-  Component: () => JSX.Element | null,
-  routes: RouteCollection
-) {
-  const WrappedRouter: React.FC<Omit<Props, "routes">> = ({
-    children,
-    ...props
-  }) => (
-    <StateRouter {...props} routes={routes}>
-      {children}
-      <Component />
-    </StateRouter>
-  );
-
-  return WrappedRouter;
-}

@@ -12,17 +12,17 @@ export const TransitionManager: React.FC<{ duration: number }> = ({
   children,
   duration,
 }) => {
-  const { route } = useRouterState();
-  const [handledRoute, setHandledRoute] = React.useState(route);
+  const { routeID } = useRouterState();
+  const [handledRoute, setHandledRoute] = React.useState(routeID);
 
   React.useEffect(() => {
-    if (route === handledRoute) return;
-    const timeout = setTimeout(() => setHandledRoute(route), duration);
+    if (routeID === handledRoute) return;
+    const timeout = setTimeout(() => setHandledRoute(routeID), duration);
     return () => clearTimeout(timeout);
-  }, [route, handledRoute, duration]);
+  }, [routeID, handledRoute, duration]);
 
   return (
-    <Context.Provider value={route !== handledRoute}>
+    <Context.Provider value={routeID !== handledRoute}>
       {children}
     </Context.Provider>
   );

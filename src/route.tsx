@@ -33,28 +33,28 @@ export function useRouteData<T extends RouteData = Record<string, unknown>>() {
 export const StateRoute: React.FC<{
   layout: string;
 }> = ({ children, layout: id }) => {
-  const { prevRoute, route } = useRouterState();
+  const { prevRouteID, routeID } = useRouterState();
   const isTransitioning = useTransitioning();
-  const [prerunScheduled, setPrerunScheduled] = React.useState(id !== route);
+  const [prerunScheduled, setPrerunScheduled] = React.useState(id !== routeID);
 
   const ctx = React.useMemo<RouteState>(
     () => ({
       id,
-      active: isTransitioning && prerunScheduled ? false : id === route,
-      visible: id === route || (isTransitioning && id === prevRoute),
+      active: isTransitioning && prerunScheduled ? false : id === routeID,
+      visible: id === routeID || (isTransitioning && id === prevRouteID),
       transition:
-        isTransitioning && (id === route || id === prevRoute)
+        isTransitioning && (id === routeID || id === prevRouteID)
           ? {
-              entering: id === route,
+              entering: id === routeID,
             }
           : null,
     }),
-    [isTransitioning, id, route, prevRoute, prerunScheduled]
+    [isTransitioning, id, routeID, prevRouteID, prerunScheduled]
   );
 
   React.useLayoutEffect(() => {
-    setTimeout(() => setPrerunScheduled(id !== route));
-  }, [id, route]);
+    setTimeout(() => setPrerunScheduled(id !== routeID));
+  }, [id, routeID]);
 
   return <Context.Provider value={ctx}>{children}</Context.Provider>;
 };
