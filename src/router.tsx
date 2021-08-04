@@ -5,8 +5,8 @@ export type RouteData = Record<string, unknown>;
 type StateRouterState<T extends RouteData = RouteData> = {
   id: string | null;
   prevId: string | null;
-  data: { [id in string]?: T | null };
-  currentData: T | null;
+  data: T | null;
+  dataCache: { [id in string]?: T | null };
 };
 
 type Props = {
@@ -17,8 +17,8 @@ type Props = {
 const initialState: StateRouterState = {
   id: null,
   prevId: null,
-  data: {},
-  currentData: null,
+  data: null,
+  dataCache: {},
 };
 
 const Context = React.createContext<StateRouterState>(initialState);
@@ -32,48 +32,46 @@ export function useRouterState(): StateRouterState {
 export function useRouteData<T extends RouteData = RouteData>(
   id: string
 ): T | null {
-  const { data: routeData } = useRouterState();
-  return React.useMemo(() => (routeData[id] as T | undefined | null) || null, [
+  const { dataCache } = useRouterState();
+  return React.useMemo(() => (dataCache[id] as T | undefined | null) || null, [
     id,
-    routeData,
+    dataCache,
   ]);
 }
 
 export const StateRouter: React.FC<Props> = ({ children, id, data }) => {
   const [handledData, setHandledData] = React.useState<RouteData | null>(null);
 
-  const [state, setState] = React.useState<StateRouterState>(() => {
-    const initState: StateRouterState = {
-      ...initialState,
-      id: id,
-    };
-    if (id) {
-      initState.data = { [id]: data };
-      initState.currentData = data;
-    }
-
-    return initState;
-  });
+  const [state, setState] = React.useState<StateRouterState>(() =>
+    id
+      ? {
+          id,
+          prevId: null,
+          data,
+          dataCache: { [id]: data },
+        }
+      : initialState
+  );
 
   React.useEffect(() => {
-    const currentData = id ? data : null;
-    if (id === state.id && currentData === handledData) return;
+    const newData = id ? data : null;
+    if (id === state.id && newData === handledData) return;
 
     const newState: StateRouterState = {
       ...state,
       prevId: state.id,
       id: id,
-      currentData,
+      data: newData,
     };
 
     if (id)
-      newState.data = {
-        ...state.data,
-        [id]: currentData,
+      newState.dataCache = {
+        ...state.dataCache,
+        [id]: newData,
       };
 
     setState(newState);
-    setHandledData(data);
+    setHandledData(newData);
   }, [handledData, state, id, data]);
 
   return (
