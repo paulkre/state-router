@@ -1,5 +1,15 @@
 # @paulkre/state-router
 
+## 3.0.0
+
+### Major Changes
+
+- 387a099: Prop names and state attributes have been renamed.
+
+### Minor Changes
+
+- faa815e: The current route's data is now included by the router context (`currentData`).
+
 ## 2.0.1
 
 ### Patch Changes
