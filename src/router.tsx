@@ -5,18 +5,20 @@ export type RouteData = Record<string, unknown>;
 type StateRouterState<T extends RouteData = RouteData> = {
   id: string | null;
   prevId: string | null;
-  routeData: Record<string, T>;
+  data: { [id in string]?: T | null };
+  currentData: T | null;
 };
 
 type Props = {
   id: string | null;
-  data: RouteData;
+  data: RouteData | null;
 };
 
 const initialState: StateRouterState = {
   id: null,
   prevId: null,
-  routeData: {},
+  data: {},
+  currentData: null,
 };
 
 const Context = React.createContext<StateRouterState>(initialState);
@@ -30,48 +32,51 @@ export function useRouterState(): StateRouterState {
 export function useRouteData<T extends RouteData = RouteData>(
   id: string
 ): T | null {
-  const { routeData } = useRouterState();
-  return React.useMemo(() => (routeData[id] as T) || null, [id, routeData]);
+  const { data: routeData } = useRouterState();
+  return React.useMemo(() => (routeData[id] as T | undefined | null) || null, [
+    id,
+    routeData,
+  ]);
 }
 
 export const StateRouter: React.FC<Props> = ({ children, id, data }) => {
-  const [
-    handledRouteData,
-    setHandledRouteData,
-  ] = React.useState<RouteData | null>(null);
+  const [handledData, setHandledData] = React.useState<RouteData | null>(null);
 
   const [state, setState] = React.useState<StateRouterState>(() => {
     const initState: StateRouterState = {
       ...initialState,
       id: id,
     };
-    if (id) initState.routeData = { [id]: data };
+    if (id) {
+      initState.data = { [id]: data };
+      initState.currentData = data;
+    }
 
     return initState;
   });
 
   React.useEffect(() => {
-    if (id === state.id && data === handledRouteData) return;
+    const currentData = id ? data : null;
+    if (id === state.id && currentData === handledData) return;
 
     const newState: StateRouterState = {
       ...state,
       prevId: state.id,
       id: id,
+      currentData,
     };
 
     if (id)
-      newState.routeData = {
-        ...state.routeData,
-        [id]: data,
+      newState.data = {
+        ...state.data,
+        [id]: currentData,
       };
 
     setState(newState);
-    setHandledRouteData(data);
-  }, [handledRouteData, state, id, data]);
+    setHandledData(data);
+  }, [handledData, state, id, data]);
 
-  return state.id ? (
+  return (
     <RouterContextProvider value={state}>{children}</RouterContextProvider>
-  ) : (
-    <>{children}</>
   );
 };
