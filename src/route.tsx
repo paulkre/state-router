@@ -7,39 +7,50 @@ import {
 } from "./router";
 import { useTransitioning } from "./transition-manager";
 
-type RouteState = {
+type TransitionState = {
+  entering: boolean;
+};
+
+export type RouteState = {
   id: string;
   active: boolean;
   visible: boolean;
-  transition: { entering: boolean } | null;
+  transition: TransitionState | null;
 };
 
-const Context = React.createContext<RouteState>({
+const Context = React.createContext<RouteState | null>({
   id: "",
   active: false,
   visible: false,
   transition: null,
 });
 
-export function useRouteState(): RouteState {
+export function useRouteState(): RouteState | null {
   return React.useContext(Context);
 }
 
 export function useRouteData<T extends RouteData = Record<string, unknown>>() {
-  const { id } = useRouteState();
-  return useRouteDataBase<T>(id);
+  const state = useRouteState();
+  return useRouteDataBase<T>(state?.id || null);
 }
+
+const mergeTransitionStates = (
+  a: TransitionState | null,
+  b: TransitionState | null
+): TransitionState | null =>
+  a && b ? { entering: a.entering || b.entering } : a || b;
 
 export const StateRoute: React.FC<{
   id: string;
 }> = ({ children, id }) => {
+  const parentState = useRouteState();
   const { prevId, id: currentId } = useRouterState();
   const isTransitioning = useTransitioning();
   const [prerunScheduled, setPrerunScheduled] = React.useState(
     id !== currentId
   );
 
-  const ctx = React.useMemo<RouteState>(
+  const state = React.useMemo<RouteState>(
     () => ({
       id,
       active: isTransitioning && prerunScheduled ? false : id === currentId,
@@ -58,5 +69,21 @@ export const StateRoute: React.FC<{
     setTimeout(() => setPrerunScheduled(id !== currentId));
   }, [id, currentId]);
 
-  return <Context.Provider value={ctx}>{children}</Context.Provider>;
+  const combinedState = React.useMemo<RouteState>(
+    () =>
+      parentState
+        ? {
+            id: parentState.id,
+            active: state.active || parentState.active,
+            visible: state.visible || parentState.visible,
+            transition: mergeTransitionStates(
+              state.transition,
+              parentState.transition
+            ),
+          }
+        : state,
+    [state, parentState]
+  );
+
+  return <Context.Provider value={combinedState}>{children}</Context.Provider>;
 };

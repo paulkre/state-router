@@ -30,13 +30,13 @@ export function useRouterState(): StateRouterState {
 }
 
 export function useRouteData<T extends RouteData = RouteData>(
-  id: string
+  id: string | null
 ): T | null {
   const { dataCache } = useRouterState();
-  return React.useMemo(() => (dataCache[id] as T | undefined | null) || null, [
-    id,
-    dataCache,
-  ]);
+  return React.useMemo(
+    () => (id && (dataCache[id] as T | undefined | null)) || null,
+    [id, dataCache]
+  );
 }
 
 export const StateRouter: React.FC<Props> = ({ children, id, data }) => {
