@@ -1,5 +1,16 @@
 # @paulkre/state-router
 
+## 4.0.0
+
+### Major Changes
+
+- ef465e0: It is now possible to stack routes into each other. Their states will be merged with a logical `OR`.
+
+### Patch Changes
+
+- 429ac73: Pre runs when switching a route on / off are now handled by the `RouteSwitch` component instead of being done in `Route`.
+- 6f2b4a6: `RouterContextProvider` is now exposed in module exports.
+
 ## 3.0.0
 
 ### Major Changes
