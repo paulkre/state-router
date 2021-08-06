@@ -1,5 +1,11 @@
 # @paulkre/state-router
 
+## 4.0.1
+
+### Patch Changes
+
+- 5d5c2ae: Typescript build target changed to `ES2019` to support Node v12.
+
 ## 4.0.0
 
 ### Major Changes
