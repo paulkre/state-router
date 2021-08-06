@@ -18,13 +18,9 @@ export type RouteState = {
   transition: TransitionState | null;
 };
 
-const Context = React.createContext<RouteState | null>({
-  id: "",
-  active: false,
-  visible: false,
-  transition: null,
-});
+const Context = React.createContext<RouteState | null>(null);
 
+export const RouteContextProvider = Context.Provider;
 export function useRouteState(): RouteState | null {
   return React.useContext(Context);
 }
@@ -46,28 +42,21 @@ export const StateRoute: React.FC<{
   const parentState = useRouteState();
   const { prevId, id: currentId } = useRouterState();
   const isTransitioning = useTransitioning();
-  const [prerunScheduled, setPrerunScheduled] = React.useState(
-    id !== currentId
-  );
 
-  const state = React.useMemo<RouteState>(
-    () => ({
+  const state = React.useMemo<RouteState>(() => {
+    const active = id === currentId;
+    return {
       id,
-      active: isTransitioning && prerunScheduled ? false : id === currentId,
-      visible: id === currentId || (isTransitioning && id === prevId),
+      active,
+      visible: active || (isTransitioning && id === prevId),
       transition:
-        isTransitioning && (id === currentId || id === prevId)
+        isTransitioning && (active || id === prevId)
           ? {
-              entering: id === currentId,
+              entering: active,
             }
           : null,
-    }),
-    [isTransitioning, id, currentId, prevId, prerunScheduled]
-  );
-
-  React.useLayoutEffect(() => {
-    setTimeout(() => setPrerunScheduled(id !== currentId));
-  }, [id, currentId]);
+    };
+  }, [id, currentId, prevId, isTransitioning]);
 
   const combinedState = React.useMemo<RouteState>(
     () =>
@@ -85,5 +74,9 @@ export const StateRoute: React.FC<{
     [state, parentState]
   );
 
-  return <Context.Provider value={combinedState}>{children}</Context.Provider>;
+  return (
+    <RouteContextProvider value={combinedState}>
+      {children}
+    </RouteContextProvider>
+  );
 };

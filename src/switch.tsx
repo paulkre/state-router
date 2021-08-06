@@ -1,22 +1,43 @@
 import React from "react";
 
-import { useRouteState, RouteState } from "./route";
+import { useRouterState } from "./router";
+import { useRouteState, RouteContextProvider, RouteState } from "./route";
+import { useTransitioning } from "./transition-manager";
 
 const nonActiveStyles: React.CSSProperties = { pointerEvents: "none" };
-
-const defaultState: Pick<RouteState, "active" | "visible"> = {
-  active: false,
-  visible: false,
-};
 
 export const RouteSwitch: React.FC<{
   className?: string;
 }> = ({ children, className }) => {
-  const { active, visible } = useRouteState() || defaultState;
+  const { id: currentId } = useRouterState();
+  const route = useRouteState();
+  const isTransitioning = useTransitioning();
+
+  const [prerunScheduled, setPrerunScheduled] = React.useState(
+    route?.id !== currentId
+  );
+  React.useLayoutEffect(() => {
+    if (route?.id !== currentId) setPrerunScheduled(true);
+    else setTimeout(() => setPrerunScheduled(false));
+  }, [route, currentId]);
+
+  const changedState = React.useMemo<RouteState | null>(
+    () =>
+      route && {
+        ...route,
+        active: isTransitioning && prerunScheduled ? false : route.active,
+      },
+    [route, isTransitioning, prerunScheduled]
+  );
 
   return (
-    <div className={className} style={!active ? nonActiveStyles : undefined}>
-      {visible && children}
+    <div
+      className={className}
+      style={prerunScheduled || !route?.active ? nonActiveStyles : undefined}
+    >
+      <RouteContextProvider value={changedState}>
+        {route?.visible && children}
+      </RouteContextProvider>
     </div>
   );
 };
